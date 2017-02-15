@@ -13,13 +13,13 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.bluespurs.starterkit.data.ProductResult;
-import com.bluespurs.starterkit.data.bestbuy.Product;
-import com.bluespurs.starterkit.data.bestbuy.ProductResults;
+import com.bluespurs.starterkit.data.walmart.Product;
+import com.bluespurs.starterkit.data.walmart.ProductResults;
 import com.google.gson.Gson;
 
-public class BestBuy implements OnlineStore {
+public class Walmart implements OnlineStore {
 	String apikey;
-	public BestBuy (String apikey) {
+	public Walmart (String apikey) {
 		this.apikey = apikey;
 	}
 	
@@ -28,8 +28,10 @@ public class BestBuy implements OnlineStore {
 		URL url;
 		Gson gson = new Gson();
 		try {
-			url = new URL("https://api.bestbuy.com/v1/products(search="+URLEncoder.encode(keyword, "UTF-8")+")" + 
-					"?format=json&show=sku,name,salePrice&apiKey="+apikey+"&sort=salePrice.asc");
+			url = new URL("https://api.walmartlabs.com/v1/search?apiKey=" + apikey +
+					"&query="+URLEncoder.encode(keyword, "UTF-8") +
+					"&sort=price" +
+					"&facet.range=price:[" + URLEncoder.encode(""+(int)min_price+" TO 999999", "UTF-8")+"]");
 			HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.connect();
@@ -37,14 +39,15 @@ public class BestBuy implements OnlineStore {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			ProductResults reply = gson.fromJson(reader, ProductResults.class);
 			List<ProductResult> output = new ArrayList<ProductResult>();
-			System.out.println("got "+reply.products.size()+" products");
-			Iterator<Product> it = reply.products.iterator();
+			System.out.println("got "+reply.items.size()+" products");
+			Iterator<Product> it = reply.items.iterator();
 			while (it.hasNext()) {
 				Product p = it.next();
 				ProductResult p2 = new ProductResult();
 				p2.productName = p.name;
 				p2.bestPrice = p.salePrice;
-				p2.location = "BestBuy";
+				p2.location = "Walmart";
+				System.out.println("item costs:" + p2.bestPrice);
 				output.add(p2);
 			}
 			return output;
@@ -62,8 +65,8 @@ public class BestBuy implements OnlineStore {
 	@Override
 	public ProductResult getCheapestMatch(String keyword, float min_price) {
 		List<ProductResult> results = searchProducts(keyword, min_price);
-		if (results == null) return null;
 		if (results.size() > 0) return results.get(0);
 		else return null;
 	}
+
 }

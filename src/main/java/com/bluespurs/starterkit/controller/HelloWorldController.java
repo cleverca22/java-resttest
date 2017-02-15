@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 import com.bluespurs.starterkit.api.BestBuy;
 import com.bluespurs.starterkit.api.OnlineStore;
+import com.bluespurs.starterkit.api.Walmart;
 import com.bluespurs.starterkit.data.ProductResult;
 
 @RestController
@@ -23,6 +24,7 @@ public class HelloWorldController {
     public HelloWorldController() {
     	stores = new ArrayList<OnlineStore>();
     	stores.add(new BestBuy("pfe9fpy68yg28hvvma49sc89"));
+    	stores.add(new Walmart("rm25tyum3p9jm9x9x7zxshfa"));
     }
 
     /**
@@ -36,15 +38,23 @@ public class HelloWorldController {
     }
     
     @RequestMapping("/product/search")
-    public String productSearch(@RequestParam(value="name", required=true) String keyword) {
+    public String productSearch(@RequestParam(value="name", required=true) String keyword,
+    		@RequestParam(value="min_price", required=false) String min_price) {
+    	float real_min_price;
+    	if (min_price != null) real_min_price = Float.parseFloat(min_price);
+    	else real_min_price = 0;
     	Gson gson = new Gson();
     	ProductResult result = null;
     	
     	Iterator<OnlineStore> it = stores.iterator();
     	while (it.hasNext()) {
     		OnlineStore store = it.next();
-    		ProductResult result2 = store.getCheapestMatch(keyword);
-    		if (result == null) result = result2;
+    		ProductResult result2 = store.getCheapestMatch(keyword, real_min_price);
+    		if (result == null) {
+    			result = result2;
+    		} else if (result2.bestPrice < result.bestPrice) {
+    			result = result2;
+    		}
     	}
     	return gson.toJson(result);
     }
