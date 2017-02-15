@@ -28,7 +28,7 @@ public class BestBuy implements OnlineStore {
 		URL url;
 		Gson gson = new Gson();
 		try {
-			url = new URL("https://api.bestbuy.com/v1/products(search="+URLEncoder.encode(keyword, "UTF-8")+")" + 
+			url = new URL("https://api.bestbuy.com/v1/products(longDescription="+URLEncoder.encode(keyword, "UTF-8")+"*&salePrice>"+min_price+")" + 
 					"?format=json&show=sku,name,salePrice&apiKey="+apikey+"&sort=salePrice.asc");
 			HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
 			conn.setDoOutput(true);
@@ -39,12 +39,14 @@ public class BestBuy implements OnlineStore {
 			List<ProductResult> output = new ArrayList<ProductResult>();
 			System.out.println("got "+reply.products.size()+" products");
 			Iterator<Product> it = reply.products.iterator();
+			System.out.println("best 10 from bestbuy");
 			while (it.hasNext()) {
 				Product p = it.next();
 				ProductResult p2 = new ProductResult();
 				p2.productName = p.name;
 				p2.bestPrice = p.salePrice;
 				p2.location = "BestBuy";
+				System.out.println(p2);
 				output.add(p2);
 			}
 			return output;

@@ -41,13 +41,14 @@ public class Walmart implements OnlineStore {
 			List<ProductResult> output = new ArrayList<ProductResult>();
 			System.out.println("got "+reply.items.size()+" products");
 			Iterator<Product> it = reply.items.iterator();
+			System.out.println("best 10 from walmart");
 			while (it.hasNext()) {
 				Product p = it.next();
 				ProductResult p2 = new ProductResult();
 				p2.productName = p.name;
 				p2.bestPrice = p.salePrice;
 				p2.location = "Walmart";
-				System.out.println("item costs:" + p2.bestPrice);
+				System.out.println(p2);
 				output.add(p2);
 			}
 			return output;
