@@ -35,7 +35,8 @@ public class Walmart implements OnlineStore {
 			HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
 			conn.setDoOutput(true);
 			conn.connect();
-			System.out.println("res:" + conn.getResponseCode());
+			System.out.println("walmart res:" + conn.getResponseCode());
+			if (conn.getResponseCode() != 200) return null;
 			BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			ProductResults reply = gson.fromJson(reader, ProductResults.class);
 			List<ProductResult> output = new ArrayList<ProductResult>();
