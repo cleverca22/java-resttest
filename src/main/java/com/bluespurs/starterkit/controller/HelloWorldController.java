@@ -1,7 +1,7 @@
 package com.bluespurs.starterkit.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
+
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.MemcachedClient;
+
 import com.bluespurs.starterkit.api.BestBuy;
 import com.bluespurs.starterkit.api.OnlineStore;
 import com.bluespurs.starterkit.api.Walmart;
@@ -21,11 +26,13 @@ public class HelloWorldController {
     public static final String INTRO = "The Bluespurs Interview Starter Kit is running properly.";
     public static final Logger log = LoggerFactory.getLogger(HelloWorldController.class);
     private List<OnlineStore> stores;
+    private MemcachedClient cache;
     
-    public HelloWorldController() {
+    public HelloWorldController() throws IOException {
+		cache = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses("127.0.0.1:11211"));
     	stores = new ArrayList<OnlineStore>();
-    	stores.add(new BestBuy("pfe9fpy68yg28hvvma49sc89"));
-    	stores.add(new Walmart("rm25tyum3p9jm9x9x7zxshfa"));
+    	stores.add(new BestBuy("pfe9fpy68yg28hvvma49sc89", cache));
+    	stores.add(new Walmart("rm25tyum3p9jm9x9x7zxshfa", cache));
     }
 
     /**

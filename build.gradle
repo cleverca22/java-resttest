@@ -48,6 +48,9 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-devtools',
             'org.springframework.boot:spring-boot-starter-web',
 			'org.springframework.boot:spring-boot-starter-hateoas'
+    // https://mvnrepository.com/artifact/com.google.code.simple-spring-memcached/spymemcached
+    compile group: 'com.google.code.simple-spring-memcached', name: 'spymemcached', version: '2.8.4'
+
 
 	// Input Validator Provider
 	compile "org.hibernate:hibernate-validator:$hibernateValidatorVersion"

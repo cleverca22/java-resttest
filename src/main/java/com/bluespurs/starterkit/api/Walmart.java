@@ -6,27 +6,39 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
 import com.bluespurs.starterkit.data.ProductResult;
+import com.bluespurs.starterkit.data.ProductResultList;
 import com.bluespurs.starterkit.data.walmart.Product;
 import com.bluespurs.starterkit.data.walmart.ProductResults;
 import com.google.gson.Gson;
 
+import net.spy.memcached.MemcachedClient;
+
 public class Walmart implements OnlineStore {
 	String apikey;
-	public Walmart (String apikey) {
+	MemcachedClient cache;
+
+	public Walmart (String apikey, MemcachedClient cache) {
 		this.apikey = apikey;
+		this.cache = cache;
 	}
 	
 	@Override
-	public List<ProductResult> searchProducts(String keyword, int min_price) {
+	public ProductResultList searchProducts(String keyword, int min_price) {
 		URL url;
 		Gson gson = new Gson();
+		String cache_key = keyword+":walmart:"+min_price;
+		String cache_value = (String) cache.get(cache_key);
+		ProductResultList output;
+		if (cache_value != null) {
+			output = ProductResultList.fromJson(cache_value);
+			return output;
+		}
 		try {
 			url = new URL("https://api.walmartlabs.com/v1/search?apiKey=" + apikey +
 					"&query="+URLEncoder.encode(keyword, "UTF-8") +
@@ -39,7 +51,7 @@ public class Walmart implements OnlineStore {
 			if (conn.getResponseCode() != 200) return null;
 			BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			ProductResults reply = gson.fromJson(reader, ProductResults.class);
-			List<ProductResult> output = new ArrayList<ProductResult>();
+			output = new ProductResultList();
 			System.out.println("got "+reply.items.size()+" products");
 			Iterator<Product> it = reply.items.iterator();
 			System.out.println("best 10 from walmart");
@@ -52,6 +64,7 @@ public class Walmart implements OnlineStore {
 				System.out.println(p2);
 				output.add(p2);
 			}
+			cache.add(cache_key, 300, output.toJson());
 			return output;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
