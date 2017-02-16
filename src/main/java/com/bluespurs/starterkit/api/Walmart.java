@@ -8,6 +8,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -18,6 +21,7 @@ import com.bluespurs.starterkit.data.walmart.ProductResults;
 import com.google.gson.Gson;
 
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.internal.GetFuture;
 
 public class Walmart implements OnlineStore {
 	String apikey;
@@ -33,11 +37,20 @@ public class Walmart implements OnlineStore {
 		URL url;
 		Gson gson = new Gson();
 		String cache_key = keyword+":walmart:"+min_price;
-		String cache_value = (String) cache.get(cache_key);
+		GetFuture future = cache.asyncGet(cache_key);
 		ProductResultList output;
-		if (cache_value != null) {
-			output = ProductResultList.fromJson(cache_value);
-			return output;
+		if (future != null) {
+			try {
+				String cache_value = (String) future.get(50, TimeUnit.MILLISECONDS);
+				if (cache_value != null) {
+					System.out.println(cache_value);
+					output = ProductResultList.fromJson(cache_value);
+					return output;
+				}
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		try {
 			url = new URL("https://api.walmartlabs.com/v1/search?apiKey=" + apikey +

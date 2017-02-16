@@ -28,8 +28,13 @@ public class HelloWorldController {
     private List<OnlineStore> stores;
     private MemcachedClient cache;
     
-    public HelloWorldController() throws IOException {
-		cache = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses("127.0.0.1:11211"));
+    public HelloWorldController() {
+		try {
+			cache = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses("127.0.0.1:11211"));
+		} catch (IOException e) {
+			// if it can't connect to memcache, leave cache as null
+			e.printStackTrace();
+		}
     	stores = new ArrayList<OnlineStore>();
     	stores.add(new BestBuy("pfe9fpy68yg28hvvma49sc89", cache));
     	stores.add(new Walmart("rm25tyum3p9jm9x9x7zxshfa", cache));
