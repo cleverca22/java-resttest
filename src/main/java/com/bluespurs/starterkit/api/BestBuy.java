@@ -24,7 +24,7 @@ public class BestBuy implements OnlineStore {
 	}
 	
 	@Override
-	public List<ProductResult> searchProducts(String keyword, float min_price) {
+	public List<ProductResult> searchProducts(String keyword, int min_price) {
 		URL url;
 		Gson gson = new Gson();
 		try {
@@ -63,7 +63,7 @@ public class BestBuy implements OnlineStore {
 	}
 
 	@Override
-	public ProductResult getCheapestMatch(String keyword, float min_price) {
+	public ProductResult getCheapestMatch(String keyword, int min_price) {
 		List<ProductResult> results = searchProducts(keyword, min_price);
 		if (results == null) return null;
 		if (results.size() > 0) return results.get(0);

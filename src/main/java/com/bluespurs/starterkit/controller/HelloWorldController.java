@@ -1,6 +1,7 @@
 package com.bluespurs.starterkit.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,8 +41,8 @@ public class HelloWorldController {
     @RequestMapping("/product/search")
     public String productSearch(@RequestParam(value="name", required=true) String keyword,
     		@RequestParam(value="min_price", required=false) String min_price) {
-    	float real_min_price;
-    	if (min_price != null) real_min_price = Float.parseFloat(min_price);
+    	int real_min_price;
+    	if (min_price != null) real_min_price = Integer.parseInt(min_price);
     	else real_min_price = 0;
     	Gson gson = new Gson();
     	ProductResult result = null;
@@ -49,7 +50,10 @@ public class HelloWorldController {
     	Iterator<OnlineStore> it = stores.iterator();
     	while (it.hasNext()) {
     		OnlineStore store = it.next();
+    		long start = System.currentTimeMillis();
     		ProductResult result2 = store.getCheapestMatch(keyword, real_min_price);
+    		long stop = System.currentTimeMillis();
+    		System.out.println("scan took:" + (stop - start));
     		if (result == null) {
     			result = result2;
     		} else if (result2.bestPrice < result.bestPrice) {
